@@ -10,20 +10,22 @@
 </head>
 <body>
 
-    <form action="#" class="container">
+    <form action="#" class="container mt-3">
         <label for="lat">Latitude:</label>
         <input type="number" name="latitude" id="lat" placeholder="Your location latitude..." required>
-
+        <br>
         <label for="long">Longitude:</label>
         <input type="number" name="longitude" id="long" placeholder="Your location longitude..." required>
-
+        <br>
         <label for="kmr">Km range to detect planes around your location:</label>
         <input type="number" name="kmr" id="kmr" required>
-
+        <br>
         <button id="btn">Detect Planes</button>
+        <br>
     </form>
-    <button class="button" id="def_location_btn">Use default Location(Haripur Palpara)</button>
-    <button class="button" id="s_btn" style="display: none;">Stop Detection</button>
+    <button id="def_location_btn">Use default Location(Haripur Palpara)</button>
+    <br>
+    <button id="s_btn" style="display: none;">Stop Detection</button>
 
     <textarea name="window" id="window" rows="20" style="background-color: black; color: white; width: 100%; resize: none;" readonly></textarea>
     
