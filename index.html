@@ -23,10 +23,10 @@
         <label for="kmr">Km range to detect planes around your location:</label>
         <input type="number" name="kmr" id="kmr" required>
         </div>
-        <button id="btn">Detect Planes</button>
+        <button class="mb-3" id="btn">Detect Planes</button>
         
     </form>
-    <button class="mb-3" id="def_location_btn">Use default Location(Haripur Palpara)</button>
+    <button class="container mb-3" id="def_location_btn">Use default Location & range(Haripur Palpara)</button>
     <button id="s_btn" style="display: none;">Stop Detection</button>
 
     <textarea name="window" id="window" rows="20" style="background-color: black; color: white; width: 100%; resize: none;" readonly></textarea>
@@ -61,8 +61,6 @@
             }
 
             win.value='';
-
-            while(isTracking){
                 const latitude = parseFloat(document.getElementById("lat").value);
                 const longitude = parseFloat(document.getElementById("long").value);
                 const kmr = parseFloat(document.getElementById("kmr").value);
@@ -75,6 +73,10 @@
                 const lamax = latitude + lat_offset
                 const lomin = longitude - lo_offset
                 const lomax = longitude + lo_offset
+            
+            win.value = `Tracking planes within ${kmr} km of your location...`
+            
+            while(isTracking){
         
                 API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
                 const response = await fetch(API_URL);
