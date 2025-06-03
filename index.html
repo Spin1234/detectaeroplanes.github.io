@@ -91,7 +91,7 @@
                 const planes = result.states;
 
                 // win.value+=`\n${result.states}\n`;
-                if (planes !== null || planes.length === 0) {
+                if (!planes || planes.length === 0) {
                     win.value += `\nNo planes found in the area.\n`;
                 } else {
                     win.value += `\n${planes.length} plane(s) detected:\n\n`;
