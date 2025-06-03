@@ -84,6 +84,7 @@
             while(isTracking){
         
                 API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
+                try{
                 const response = await fetch(API_URL);
                 const result = await response.json();
 
@@ -99,7 +100,9 @@
                         win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Altitude: ${plane[7]} m\n`;
                     });
                 }
-                
+            }catch(error){
+                    win.value += `\nError fetching data: ${error.message}\n`;
+            }
                 win.scrollTop = win.scrollHeight;
                 
                 await new Promise(resolve => setTimeout(resolve, 10000));
