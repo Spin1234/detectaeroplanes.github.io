@@ -109,7 +109,8 @@
                     await new Promise(resolve => setTimeout(resolve, 10000));
                 }
             }
-        })
+            trackplanes();
+        });
 
         stop_btn.addEventListener('click', ()=>{
             isTracking=false
