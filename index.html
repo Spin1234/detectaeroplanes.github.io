@@ -401,9 +401,9 @@ button[disabled] {
                 const longitude = parseFloat(document.getElementById("long").value);
                 const kmr = parseFloat(document.getElementById("kmr").value);
 
-                const lat_offset = kmr / 110.574;
+                const lat_offset = kmr / 111;
                 const radians_lat = latitude * (Math.PI/180)
-                const lo_offset = kmr / (111.32 * Math.cos(radians_lat));
+                const lo_offset = kmr / (111 * Math.cos(radians_lat));
         
                 const lamin = latitude - lat_offset
                 const lamax = latitude + lat_offset
@@ -574,4 +574,5 @@ button[disabled] {
 </body>
 
 </html>
+
 
