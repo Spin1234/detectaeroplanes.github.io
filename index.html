@@ -425,7 +425,9 @@ button[disabled] {
 
 
                     let array = [0,0,0]
-                    document.getElementById('planeList').innerHTML='';
+                    let htmlbuffer ='';
+                    let logbuffer ='';
+                    //document.getElementById('planeList').innerHTML='';
                     // document.getElementById('planeList').innerHTML='Live Data...';
                     planes.forEach((plane, index) => {
                         
@@ -458,7 +460,7 @@ button[disabled] {
                             // </div>
                             // `
 
-                            document.getElementById('planeList').innerHTML += `
+                            htmlbuffer += `
                             <div class="plane-card overhead-card">
                                 <div class="plane-header-overhead">
                                     ✈️ Overhead
@@ -473,6 +475,7 @@ button[disabled] {
                                 <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
                             </div>
                             `;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
                         }
                         else if(dist<=15){
                             array[1]++;
@@ -484,7 +487,7 @@ button[disabled] {
                             // </div>
                             // `
 
-                            document.getElementById('planeList').innerHTML += `
+                            htmlbuffer += `
                             <div class="plane-card app-card">
                                 <div class="plane-header-app">
                                     ✈️ Approaching
@@ -499,6 +502,7 @@ button[disabled] {
                                 <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
                             </div>
                             `;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
                         }
                         else{
                             array[2]++;
@@ -509,7 +513,7 @@ button[disabled] {
                             // </div>
                             // `
 
-                            document.getElementById('planeList').innerHTML += `
+                            htmlbuffer += `
                             <div class="plane-card surr-card">
                                 <div class="plane-header-surr">
                                     ✈️ Surrounding
@@ -524,13 +528,15 @@ button[disabled] {
                                 <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
                             </div>
                             `;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
                         }
-                        win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
-
+                        //win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
 
                 
                     });
-                    
+                    // ✅ SINGLE, SYNCED UPDATE
+                    document.getElementById('planeList').innerHTML = htmlbuffer;
+                    win.value = logbuffer;
 
                     overhead.innerHTML=''
                     overhead.innerHTML=`Overhead ( <=5 km) <br><br> ${array[0]}`
@@ -572,6 +578,7 @@ button[disabled] {
 </body>
 
 </html>
+
 
 
 
