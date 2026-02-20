@@ -429,13 +429,11 @@ button[disabled] {
                     // document.getElementById('planeList').innerHTML='Live Data...';
                     planes.forEach((plane, index) => {
                         
-                        // skip invalid coordinates
-    if (plane[5] === null || plane[6] === null) return;
+        
 
-    const dist = getDistance(latitude, longitude, plane[6], plane[5]);
+                        const dist = getDistance(latitude, longitude, plane[6], plane[5]);
 
-    // 🚫 HARD FILTER — this fixes the bug
-    if (dist > kmr) return;
+    
 
                         // if (dist < 2) { // If plane is within 2km
                         //     new Notification("Plane Overhead!", {
@@ -574,5 +572,6 @@ button[disabled] {
 </body>
 
 </html>
+
 
 
