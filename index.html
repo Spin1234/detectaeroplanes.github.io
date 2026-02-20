@@ -401,7 +401,7 @@ button[disabled] {
                 const longitude = parseFloat(document.getElementById("long").value);
                 const kmr = parseFloat(document.getElementById("kmr").value);
 
-                const lat_offset = kmr / 111.32
+                const lat_offset = kmr / 110.574;
                 const radians_lat = latitude * (Math.PI/180)
                 const lo_offset = kmr / (111.32 * Math.cos(radians_lat));
         
@@ -428,7 +428,14 @@ button[disabled] {
                     document.getElementById('planeList').innerHTML='';
                     // document.getElementById('planeList').innerHTML='Live Data...';
                     planes.forEach((plane, index) => {
-                        const dist = getDistance(latitude, longitude, plane[6], plane[5]);
+                        
+                        // skip invalid coordinates
+    if (plane[5] === null || plane[6] === null) return;
+
+    const dist = getDistance(latitude, longitude, plane[6], plane[5]);
+
+    // 🚫 HARD FILTER — this fixes the bug
+    if (dist > kmr) return;
 
                         // if (dist < 2) { // If plane is within 2km
                         //     new Notification("Plane Overhead!", {
@@ -567,3 +574,4 @@ button[disabled] {
 </body>
 
 </html>
+
