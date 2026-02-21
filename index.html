@@ -435,7 +435,7 @@ button[disabled] {
 
                         const dist = getDistance(latitude, longitude, plane[6], plane[5]);
 
-    
+                        if (dist > kmr) return;
 
                         // if (dist < 2) { // If plane is within 2km
                         //     new Notification("Plane Overhead!", {
@@ -578,6 +578,7 @@ button[disabled] {
 </body>
 
 </html>
+
 
 
 
