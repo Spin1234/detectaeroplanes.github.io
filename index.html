@@ -421,7 +421,8 @@ button[disabled] {
                 if (!planes || planes.length === 0) {
                     win.value += `\nNo planes found in the area.\n`;
                 } else {
-                    win.value += `\n${planes.length} plane(s) detected:\n\n`;
+                    let planes =planes.length;
+                    win.value += `\n${planes} plane(s) detected:\n\n`;
 
 
                     let array = [0,0,0]
@@ -435,7 +436,10 @@ button[disabled] {
 
                         const dist = getDistance(latitude, longitude, plane[6], plane[5]);
 
-                        if (dist > kmr) return;
+                        if (dist > kmr) {
+                            planes--;
+                            return;
+                        }
 
                         // if (dist < 2) { // If plane is within 2km
                         //     new Notification("Plane Overhead!", {
@@ -578,6 +582,7 @@ button[disabled] {
 </body>
 
 </html>
+
 
 
 
