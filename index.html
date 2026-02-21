@@ -427,7 +427,7 @@ button[disabled] {
                     let array = [0,0,0]
                     let htmlbuffer ='';
                     let logbuffer ='';
-                    //document.getElementById('planeList').innerHTML='';
+                    document.getElementById('planeList').innerHTML='';
                     // document.getElementById('planeList').innerHTML='Live Data...';
                     planes.forEach((plane, index) => {
                         
@@ -536,7 +536,7 @@ button[disabled] {
                     });
                     // ✅ SINGLE, SYNCED UPDATE
                     document.getElementById('planeList').innerHTML = htmlbuffer;
-                    win.value = logbuffer;
+                    win.value += logbuffer;
 
                     overhead.innerHTML=''
                     overhead.innerHTML=`Overhead ( <=5 km) <br><br> ${array[0]}`
@@ -578,6 +578,7 @@ button[disabled] {
 </body>
 
 </html>
+
 
 
 
