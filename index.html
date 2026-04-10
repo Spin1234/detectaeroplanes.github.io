@@ -84,9 +84,12 @@
             async function trackplanes(){
                 while(isTracking){
             
-                    API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
+                    //API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
+
+                    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+                    const targetUrl = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
                     try{
-                    const response = await fetch(API_URL);
+                    const response = await fetch(proxyUrl + targetUrl);
                     const result = await response.json();
     
                     const planes = result.states;
