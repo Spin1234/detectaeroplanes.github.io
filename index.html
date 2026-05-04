@@ -481,14 +481,14 @@ button[disabled] {
                                 <div class="plane-row"><span>ICAO24:</span> ${plane.flight_icao }</div>
                                 <div class="plane-row"><span>Callsign:</span> ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"}</div>
                                 <div class="plane-row"><span>Country:</span> ${plane.flag}</div>
-                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)}</div>
+                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata)} to ${plane.arr_icao(plane.arr_iata)}</div>
                                 <div class="plane-row"><span>Latitude:</span> ${plane.lat}</div>
                                 <div class="plane-row"><span>Longitude:</span> ${plane.lng}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
                                 <div class="plane-row"><span>Altitude:</span> ${plane.alt || "N/A"} m</div>
                             </div>
                             `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata)} to ${plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
                         }
                         else if(dist<=15){
                             array[1]++;
@@ -509,7 +509,7 @@ button[disabled] {
                                 <div class="plane-row"><span>ICAO24:</span> ${plane.flight_icao }</div>
                                 <div class="plane-row"><span>Callsign:</span> ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"}</div>
                                 <div class="plane-row"><span>Country:</span> ${plane.flag}</div>
-                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)}</div>
+                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata)} to ${plane.arr_icao(plane.arr_iata)}</div>
                                 <div class="plane-row"><span>Latitude:</span> ${plane.lat}</div>
                                 <div class="plane-row"><span>Longitude:</span> ${plane.lng}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
@@ -536,14 +536,14 @@ button[disabled] {
                                 <div class="plane-row"><span>ICAO24:</span> ${plane.flight_icao }</div>
                                 <div class="plane-row"><span>Callsign:</span> ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"}</div>
                                 <div class="plane-row"><span>Country:</span> ${plane.flag}</div>
-                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)}</div>
+                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata)} to ${plane.arr_icao(plane.arr_iata)}</div>
                                 <div class="plane-row"><span>Latitude:</span> ${plane.lat}</div>
                                 <div class="plane-row"><span>Longitude:</span> ${plane.lng}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
                                 <div class="plane-row"><span>Altitude:</span> ${plane.alt || "N/A"} m</div>
                             </div>
                             `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata)} to ${plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
                         }
                         //win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
 
