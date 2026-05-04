@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plane Detector</title>
+<style>
+    :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --text: #e5e7eb;
+        --accent: #38bdf8;
+        --green: #22c55e;
+        --yellow: #eab308;
+        --red: #ef4444;
+    }
+
+    body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #020617;
+        color: var(--text);
+    }
+
+    .data {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .data { grid-template-columns: 1fr; }
+    }
+
+    .card {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    }
+
+    h3 { margin-top: 0; color: var(--accent); }
+
+    form { display: flex; flex-direction: column; gap: 10px; }
+    label { font-size: 0.9rem; opacity: 0.85; }
+
+    input {
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        background: #020617;
+        color: white;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+        color: #020617;
+        font-weight: bold;
+    }
+
+    button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: none;
+        filter: grayscale(1);
+    }
+
+    button.secondary {
+        background: #020617;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+    }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .status {
+        height: 100px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .overhead { border: 2px solid var(--green); color: var(--green); }
+    .app      { border: 2px solid var(--yellow); color: var(--yellow); }
+    .leaving  { border: 2px solid var(--red);    color: var(--red); }
+
+    .plane-list {
+        margin-top: 10px;
+        height: 280px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .plane-card {
+        background: #020617;
+        color: #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .overhead-card { border-left: 6px solid var(--green); }
+    .app-card      { border-left: 6px solid var(--yellow); }
+    .surr-card     { border-left: 6px solid var(--red); }
+
+    .plane-header-overhead { font-weight: bold; color: var(--green);  margin-bottom: 8px; }
+    .plane-header-app      { font-weight: bold; color: var(--yellow); margin-bottom: 8px; }
+    .plane-header-surr     { font-weight: bold; color: var(--red);    margin-bottom: 8px; }
+
+    .plane-row { display: flex; justify-content: space-between; padding: 2px 0; }
+    .plane-row span { opacity: 0.7; }
+
+    .plane-list::-webkit-scrollbar { width: 6px; }
+    .plane-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+    .terminal-wrap { margin: 0 24px 30px; padding: 20px; }
+
+    textarea {
+        width: 95%;
+        background: black;
+        color: #00ff9c;
+        border-radius: 10px;
+        padding: 12px;
+        resize: none;
+        border: none;
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+
+    .footer {
+        margin-top: 40px;
+        padding: 14px;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        background: #020617;
+        border-top: 1px solid #1e293b;
+    }
+    .footer strong { color: var(--accent); }
+
+    .app-header {
+        padding: 16px 24px;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--accent);
+        background: #020617;
+        border-bottom: 1px solid #1e293b;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .api-badge {
+        font-size: 0.7rem;
+        background: rgba(34,197,94,0.12);
+        color: var(--green);
+        border: 1px solid rgba(34,197,94,0.3);
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    #s_btn { margin: 0 24px 10px; display: none; }
+</style>
+</head>
+
+<body>
+
+<header class="app-header">
+    ✈️ Track Planes
+    <span class="api-badge">⬤ adsb.lol — No Auth Required</span>
+</header>
+
+<div class="data">
+
+    <!-- FORM CARD -->
+    <div class="card">
+        <h3>Plane Detection Settings</h3>
+        <form action="#">
+            <label>Latitude</label>
+            <input type="number" id="lat" placeholder="e.g. 19.0760" required>
+
+            <label>Longitude</label>
+            <input type="number" id="long" placeholder="e.g. 72.8777" required>
+
+            <label>Detection Radius (KM)</label>
+            <input type="number" id="kmr" placeholder="e.g. 50" required>
+
+            <button id="btn">Detect Planes</button>
+            <p id="msg" style="margin:4px 0; font-size:0.85rem; color:#94a3b8;"></p>
+        </form>
+        <button class="secondary" onclick="getLocation()" style="margin-top:10px;">📍 Use My Location</button>
+    </div>
+
+    <!-- STATUS CARD -->
+    <div class="card">
+        <h3>Plane Status</h3>
+        <h4 id="ld" style="margin:4px 0; font-size:0.85rem; color:#94a3b8; font-weight:normal;"></h4>
+        <div class="status-grid">
+            <div class="status overhead" id="co">Overhead</div>
+            <div class="status app"      id="ca">Approaching</div>
+            <div class="status leaving"  id="cs">Surrounding</div>
+        </div>
+        <div class="plane-list" id="planeList"></div>
+    </div>
+
+</div>
+
+<button id="s_btn" class="secondary">⏹ Stop Detection</button>
+
+<div class="terminal-wrap card">
+    <h3>Terminal Window</h3>
+    <textarea id="window" rows="20" readonly></textarea>
+</div>
+
+<footer class="footer">
+    © 2026 • Made by <strong>Sayak Pal</strong> &nbsp;|&nbsp; Flight data by <strong>adsb.lol</strong>
+</footer>
+
+<script>
+const win       = document.getElementById("window");
+const start_btn = document.getElementById("btn");
+const stop_btn  = document.getElementById("s_btn");
+
+function log(msg) {
+    win.value += `\n${msg}`;
+    win.scrollTop = win.scrollHeight;
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function getLocation() {
+    if (!navigator.geolocation) { alert("Geolocation not supported!"); return; }
+    document.getElementById('msg').textContent = "Getting location…";
+    navigator.geolocation.getCurrentPosition(pos => {
+        document.getElementById("lat").value  = pos.coords.latitude;
+        document.getElementById("long").value = pos.coords.longitude;
+        document.getElementById('msg').textContent = '';
+    }, err => {
+        document.getElementById('msg').textContent = '';
+        alert("Location error: " + err.message);
+    });
+}
+
+// adsb.lol uses nautical miles — convert km
+const KM_TO_NM = 0.539957;
+
+let isTracking = false;
+
+start_btn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const latitude  = document.getElementById("lat").value;
+    const longitude = document.getElementById("long").value;
+    const kmr       = document.getElementById("kmr").value;
+
+    if (!latitude || !longitude || !kmr) { alert("All fields are required!"); return; }
+    if (isTracking) return;
+
+    isTracking = true;
+    start_btn.disabled     = true;
+    stop_btn.style.display = "block";
+    stop_btn.disabled      = false;
+
+    win.value = '';
+    log(`Detecting planes within ${kmr} km radius…`);
+    log(`Source: api.adsb.lol (no auth needed)\n`);
+
+    while (isTracking) {
+
+        const lat = parseFloat(document.getElementById("lat").value);
+        const lon = parseFloat(document.getElementById("long").value);
+        const km  = parseFloat(document.getElementById("kmr").value);
+
+        document.getElementById('ld').textContent = 'Live data…';
+
+        try {
+            const distNm = Math.ceil(km * KM_TO_NM);
+            const url = `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/${distNm}`;
+            const res  = await fetch(url);
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const data   = await res.json();
+            const planes = data.ac;
+
+            if (!planes || planes.length === 0) {
+                log("No planes found in the area.");
+            } else {
+
+                // Re-filter precisely to km (API uses nm bounding, so edges may creep in)
+                const inRange = planes.filter(p =>
+                    p.lat != null && p.lon != null &&
+                    getDistance(lat, lon, p.lat, p.lon) <= km
+                );
+
+                log(`${inRange.length} plane(s) within ${km} km:\n`);
+
+                let counts = [0, 0, 0];
+                let htmlbuffer = '', logbuffer = '';
+
+                inRange.forEach((p, i) => {
+                    const dist = getDistance(lat, lon, p.lat, p.lon);
+
+                    const altFt  = (typeof p.alt_baro === 'number') ? p.alt_baro : null;
+                    const altM   = altFt != null ? Math.round(altFt * 0.3048) : null;
+                    const altStr = altM  != null ? `${altM} m (${altFt} ft)` : 'On ground / N/A';
+
+                    const callsign = p.flight?.trim() || "N/A";
+                    const reg      = p.r?.trim()      || "N/A";
+                    const type     = p.t?.trim()      || "N/A";
+                    const icao     = p.hex?.toUpperCase() || "N/A";
+                    const speed    = p.gs != null ? `${Math.round(p.gs)} kts` : "N/A";
+
+                    let cls, headerCls, label;
+                    if (dist < 5)        { counts[0]++; cls='overhead-card'; headerCls='plane-header-overhead'; label='✈️ Overhead'; }
+                    else if (dist <= 15) { counts[1]++; cls='app-card';      headerCls='plane-header-app';      label='✈️ Approaching'; }
+                    else                 { counts[2]++; cls='surr-card';     headerCls='plane-header-surr';     label='✈️ Surrounding'; }
+
+                    htmlbuffer += `
+                    <div class="plane-card ${cls}">
+                        <div class="${headerCls}">${label}</div>
+                        <div class="plane-row"><span>ICAO24:</span> ${icao}</div>
+                        <div class="plane-row"><span>Callsign:</span> ${callsign}</div>
+                        <div class="plane-row"><span>Reg:</span> ${reg}</div>
+                        <div class="plane-row"><span>Type:</span> ${type}</div>
+                        <div class="plane-row"><span>Latitude:</span> ${p.lat.toFixed(4)}</div>
+                        <div class="plane-row"><span>Longitude:</span> ${p.lon.toFixed(4)}</div>
+                        <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
+                        <div class="plane-row"><span>Altitude:</span> ${altStr}</div>
+                        <div class="plane-row"><span>Speed:</span> ${speed}</div>
+                    </div>`;
+
+                    logbuffer += `#${i+1}: ${icao} | ${callsign} | ${reg} | ${type} | ${dist.toFixed(2)} km | ${altStr} | ${speed}\n`;
+                });
+
+                document.getElementById('planeList').innerHTML = htmlbuffer;
+                win.value += logbuffer;
+
+                document.getElementById('co').innerHTML = `Overhead<br>(≤5 km)<br><br><b>${counts[0]}</b>`;
+                document.getElementById('ca').innerHTML = `Approaching<br>(≤15 km)<br><br><b>${counts[1]}</b>`;
+                document.getElementById('cs').innerHTML = `Surrounding<br>(>15 km)<br><br><b>${counts[2]}</b>`;
+            }
+
+        } catch(err) {
+            log(`❌ Error: ${err.message}`);
+        }
+
+        win.scrollTop = win.scrollHeight;
+        await new Promise(r => setTimeout(r, 10000));
+    }
+});
+
+stop_btn.addEventListener('click', () => {
+    isTracking             = false;
+    start_btn.disabled     = false;
+    stop_btn.disabled      = true;
+    document.getElementById('ld').textContent = 'Detection stopped.';
+    log("\n⏹ Tracking stopped.");
+});
+</script>
+
+</body>
+</html>
