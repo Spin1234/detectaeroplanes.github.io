@@ -301,6 +301,7 @@ button[disabled] {
 
 <script>
 
+    const API_KEY = "611b3c90-9612-4419-9867-2fab68663d5e"; 
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Earth's radius in km
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -411,12 +412,18 @@ button[disabled] {
                 const lomax = longitude + lo_offset
         
                 //const API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
-                const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-                const targetUrl = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
-                const response = await fetch(proxyUrl + targetUrl);
-                const result = await response.json();
+                // const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+                // const targetUrl = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
+                // const response = await fetch(proxyUrl + targetUrl);
+                // const result = await response.json();
 
-                const planes = result.states;
+                // const planes = result.states;
+
+                const url = `https://airlabs.co/api/v9/flights?bbox=${lamin},${lomin},${lamax},${lomax}&api_key=${API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                const planes = data.response;
 
                 // win.value+=`\n${result.states}\n`;
                 
@@ -436,7 +443,7 @@ button[disabled] {
                         
         
 
-                        const dist = getDistance(latitude, longitude, plane[6], plane[5]);
+                        const dist = getDistance(latitude, longitude, plane.lat, plane.lng);
 
                         if (dist > kmr) {
                             return;
@@ -471,16 +478,17 @@ button[disabled] {
                                     ✈️ Overhead
                                 </div>
 
-                                <div class="plane-row"><span>ICAO24:</span> ${plane[0]}</div>
-                                <div class="plane-row"><span>Callsign:</span> ${plane[1]?.trim() || "N/A"}</div>
-                                <div class="plane-row"><span>Country:</span> ${plane[2]}</div>
-                                <div class="plane-row"><span>Latitude:</span> ${plane[6]}</div>
-                                <div class="plane-row"><span>Longitude:</span> ${plane[5]}</div>
+                                <div class="plane-row"><span>ICAO24:</span> ${plane.flight_icao }</div>
+                                <div class="plane-row"><span>Callsign:</span> ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"}</div>
+                                <div class="plane-row"><span>Country:</span> ${plane.flag}</div>
+                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)}</div>
+                                <div class="plane-row"><span>Latitude:</span> ${plane.lat}</div>
+                                <div class="plane-row"><span>Longitude:</span> ${plane.lng}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
-                                <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
+                                <div class="plane-row"><span>Altitude:</span> ${plane.alt || "N/A"} m</div>
                             </div>
                             `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
                         }
                         else if(dist<=15){
                             array[1]++;
@@ -498,16 +506,17 @@ button[disabled] {
                                     ✈️ Approaching
                                 </div>
 
-                                <div class="plane-row"><span>ICAO24:</span> ${plane[0]}</div>
-                                <div class="plane-row"><span>Callsign:</span> ${plane[1]?.trim() || "N/A"}</div>
-                                <div class="plane-row"><span>Country:</span> ${plane[2]}</div>
-                                <div class="plane-row"><span>Latitude:</span> ${plane[6]}</div>
-                                <div class="plane-row"><span>Longitude:</span> ${plane[5]}</div>
+                                <div class="plane-row"><span>ICAO24:</span> ${plane.flight_icao }</div>
+                                <div class="plane-row"><span>Callsign:</span> ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"}</div>
+                                <div class="plane-row"><span>Country:</span> ${plane.flag}</div>
+                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)}</div>
+                                <div class="plane-row"><span>Latitude:</span> ${plane.lat}</div>
+                                <div class="plane-row"><span>Longitude:</span> ${plane.lng}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
-                                <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
+                                <div class="plane-row"><span>Altitude:</span> ${plane.alt || "N/A"} m</div>
                             </div>
                             `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
                         }
                         else{
                             array[2]++;
@@ -524,16 +533,17 @@ button[disabled] {
                                     ✈️ Surrounding
                                 </div>
 
-                                <div class="plane-row"><span>ICAO24:</span> ${plane[0]}</div>
-                                <div class="plane-row"><span>Callsign:</span> ${plane[1]?.trim() || "N/A"}</div>
-                                <div class="plane-row"><span>Country:</span> ${plane[2]}</div>
-                                <div class="plane-row"><span>Latitude:</span> ${plane[6]}</div>
-                                <div class="plane-row"><span>Longitude:</span> ${plane[5]}</div>
+                                <div class="plane-row"><span>ICAO24:</span> ${plane.flight_icao }</div>
+                                <div class="plane-row"><span>Callsign:</span> ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"}</div>
+                                <div class="plane-row"><span>Country:</span> ${plane.flag}</div>
+                                <div class="plane-row"><span>Dep-Arr:</span> ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)}</div>
+                                <div class="plane-row"><span>Latitude:</span> ${plane.lat}</div>
+                                <div class="plane-row"><span>Longitude:</span> ${plane.lng}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
-                                <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
+                                <div class="plane-row"><span>Altitude:</span> ${plane.alt || "N/A"} m</div>
                             </div>
                             `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
+                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane.flight_icao} | Callsign: ${plane.airline_icao (plane.aircraft_icao)?.trim() || "N/A"} | Country: ${plane.flag} | Dep-Arr: ${plane.dep_icao(plane.dep_iata) to plane.arr_icao(plane.arr_iata)} | Latitude: ${plane.lat} | Longitude: ${plane.lng} | Distance: ${dist}km | Altitude: ${plane.alt} m\n`;
                         }
                         //win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
 
@@ -553,7 +563,7 @@ button[disabled] {
                 
                 win.scrollTop = win.scrollHeight;
                 
-                await new Promise(resolve => setTimeout(resolve, 10000));
+                await new Promise(resolve => setTimeout(resolve, 15000));
             }
     }
     })
