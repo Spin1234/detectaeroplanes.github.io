@@ -86,24 +86,20 @@
             
                     //API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
 
-                    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-                    const targetUrl = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
                     try{
-                    const response = await fetch(proxyUrl + targetUrl);
-                    const result = await response.json();
-    
-                    const planes = result.states;
-    
-                    // win.value+=`\n${result.states}\n`;
-                    if (!planes || planes.length === 0) {
-                        win.value += `\nNo planes found in the area.\n`;
-                    } else {
-                        win.value += `\n${planes.length} plane(s) detected:\n\n`;
-    
-                        planes.forEach((plane, index) => {
-                            win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Altitude: ${plane[7]} m\n`;
-                        });
-                    }
+                        const result = await response.json();
+
+                        const planes = result.planes;
+                        
+                        if (!planes || planes.length === 0) {
+                            win.value += `\nNo planes found in the area.\n`;
+                        } else {
+                            win.value += `\n${planes.length} plane(s) detected:\n\n`;
+                        
+                            planes.forEach((plane, index) => {
+                                win.value += `\nPlane #${index + 1}: ICAO24: ${plane.icao24} | Callsign: ${plane.callsign} | Country: ${plane.country} | Latitude: ${plane.latitude} | Longitude: ${plane.longitude} | Altitude: ${plane.altitude} m\n`;
+                            });
+                        }
                 }catch(error){
                         win.value += `\nError fetching data: ${error.message}\n`;
                 }
