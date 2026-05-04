@@ -39,7 +39,8 @@
 
     <footer><strong>Made by Sayak Pal</strong></footer>
     <script>
-       
+
+        const API_KEY = "611b3c90-9612-4419-9867-2fab68663d5e";
         const win = document.getElementById("window");
         const def_location_btn = document.getElementById("def_location_btn");
         const stop_btn = document.getElementById("s_btn");
@@ -88,22 +89,22 @@
 
                     try{
 
-                        const response = await fetch(
-                          `https://detectplanesapi.onrender.com/planes?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`
-                        );
-                        const result = await response.json();
-
-                        const planes = result.planes;
-                        
+                        const url = `https://airlabs.co/api/v9/flights?bbox=${lamin},${lomin},${lamax},${lomax}&api_key=${API_KEY}`;
+                        const res = await fetch(url);
+                        const data = await res.json();
+        
+                        const planes = data.response;
+        
                         if (!planes || planes.length === 0) {
-                            win.value += `\nNo planes found in the area.\n`;
+                            win.value += "\nNo planes found\n";
                         } else {
-                            win.value += `\n${planes.length} plane(s) detected:\n\n`;
-                        
-                            planes.forEach((plane, index) => {
-                                win.value += `\nPlane #${index + 1}: ICAO24: ${plane.icao24} | Callsign: ${plane.callsign} | Country: ${plane.country} | Latitude: ${plane.latitude} | Longitude: ${plane.longitude} | Altitude: ${plane.altitude} m\n`;
+                            win.value += `\n${planes.length} planes found:\n\n`;
+        
+                            planes.forEach((p, i) => {
+                                win.value += `Plane ${i+1}: ${p.flight_iata || "N/A"} | ${p.airline_iata || ""} | Lat: ${p.lat} | Lon: ${p.lng} | Alt: ${p.alt} m\n`;
                             });
                         }
+                }
                 }catch(error){
                         win.value += `\nError fetching data: ${error.message}\n`;
                 }
