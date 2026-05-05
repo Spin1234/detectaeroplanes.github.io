@@ -439,10 +439,10 @@ button[disabled] {
                     const response = await fetch(proxyUrl);
                     const data= await response.json();
 
-                    const result = JSON.parse(data.contents)
+                    const result = JSON.parse(data.contents);
         
                     planes = result.states;
-                    console.log(planes)
+                    console.log(planes);
                 }catch(error){
                     console.log(error);
                 }
