@@ -300,7 +300,6 @@ button[disabled] {
 
 
 <script>
-
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Earth's radius in km
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -310,7 +309,6 @@ button[disabled] {
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         return R * c; 
     }
-
 
     function getLocation(){
         if(navigator.geolocation){
@@ -327,252 +325,159 @@ button[disabled] {
     function showPosition(position){
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-
         document.getElementById("lat").value = lat;
         document.getElementById("long").value = lon;
         document.getElementById('msg').innerHTML=''
-        
     }
 
     function showError(error){
         switch(error.code){
-            case error.PERMISSION_DENIED: alert("Denied permission!"); 
-                break;
-            case error.POSITION_UNAVAILABLE: alert("Location info is not available!");
-                break;
-            case error.TIMEOUT: alert("Request timedout!");
-                break;
-            case error.UNKNOWN_ERROR: alert("Unknown error occured!");
-                break;
+            case error.PERMISSION_DENIED: alert("Denied permission!"); break;
+            case error.POSITION_UNAVAILABLE: alert("Location info is not available!"); break;
+            case error.TIMEOUT: alert("Request timedout!"); break;
+            case error.UNKNOWN_ERROR: alert("Unknown error occured!"); break;
         }
     }
-   
+
     const win = document.getElementById("window");
-    //const def_location_btn = document.getElementById("def_location_btn");
     const stop_btn = document.getElementById("s_btn");
     const start_btn = document.getElementById("btn");
 
-    // def_location_btn.addEventListener('click', ()=>{
-    //     document.getElementById("lat").value = 22.7093873;
-    //     document.getElementById("long").value = 88.1673183;
-    //     document.getElementById("kmr").value = 10;
-    // })
+    let isTracking = false;
 
-    let isTracking = false
+    const overhead = document.getElementById('co');
+    const app_count = document.getElementById('ca');
+    const leaving = document.getElementById('cs');
 
-    const overhead = document.getElementById('co')
-    const app = document.getElementById('ca')
-    const leaving = document.getElementById('cs')
-    
     document.getElementById("btn").addEventListener("click", async (e)=>{
-
-        
         e.preventDefault();
 
-        const latitude = document.getElementById("lat").value;
-        const longitude = document.getElementById("long").value;
+        const userLat = document.getElementById("lat").value;
+        const userLon = document.getElementById("long").value;
         const kmr = document.getElementById("kmr").value;
 
-        if(latitude==='' || longitude==='' || kmr===''){
+        if(userLat==='' || userLon==='' || kmr===''){
             alert("all fields are required!");
             return;
         }
-        if (isTracking){
-            return;
-        }
-        else{
+        if (isTracking) return;
 
-            isTracking=true;
-            start_btn.disabled = true;
-            stop_btn.style.display="block";
-            if(stop_btn.disabled!=false){
-                stop_btn.disabled = false;
-            }
+        isTracking = true;
+        start_btn.disabled = true;
+        stop_btn.style.display = "block";
+        stop_btn.disabled = false;
 
-            win.value='';
-            win.value += `\nDetecting plane within ${kmr} km range....\n`;
+        win.value = '';
+        win.value += `\nDetecting plane within ${kmr} km range....\n`;
 
-            while(isTracking===true){
+        while(isTracking === true){
+            document.getElementById('ld').innerHTML = 'Live data...';
 
-                document.getElementById('ld').innerHTML=''
-                document.getElementById('ld').innerHTML='Live data...'
+            const latitude = parseFloat(userLat);
+            const longitude = parseFloat(userLon);
+            const radiusKm = parseFloat(kmr);
+            
+            // ADSB.lol requires Nautical Miles (NM)
+            const radiusNM = Math.round(radiusKm * 0.539957);
 
-                const latitude = parseFloat(document.getElementById("lat").value);
-                const longitude = parseFloat(document.getElementById("long").value);
-                const kmr = parseFloat(document.getElementById("kmr").value);
+            const url = `https://api.adsb.lol/v2/lat/${latitude}/lon/${longitude}/dist/${radiusNM}`;
 
-                const lat_offset = kmr / 111;
-                const radians_lat = latitude * (Math.PI/180)
-                const lo_offset = kmr / (111 * Math.cos(radians_lat));
-        
-                const lamin = latitude - lat_offset
-                const lamax = latitude + lat_offset
-                const lomin = longitude - lo_offset
-                const lomax = longitude + lo_offset
-        
-                const API_URL = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
-                const response = await fetch(API_URL);
-                const result = await response.json();
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
 
-                const planes = result.states;
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-                // win.value+=`\n${result.states}\n`;
-                
-                if (!planes || planes.length === 0) {
+                const data = await response.json();
+                const planes = data.ac || [];
+
+                if (planes.length === 0) {
                     win.value += `\nNo planes found in the area.\n`;
+                    document.getElementById('planeList').innerHTML = '';
                 } else {
-                    
-                    win.value += `\n${planes.length} plane(s) detected:\n\n`;
+                    win.value += `\n${planes.length} plane(s) detected:\n`;
 
+                    let counts = [0, 0, 0]; // Overhead, Approaching, Surrounding
+                    let htmlbuffer = '';
+                    let logbuffer = '';
 
-                    let array = [0,0,0]
-                    let htmlbuffer ='';
-                    let logbuffer ='';
-                    document.getElementById('planeList').innerHTML='';
-                    // document.getElementById('planeList').innerHTML='Live Data...';
-                    planes.forEach((plane, index) => {
+                    planes.forEach((p, index) => {
+                        // ADSB.lol already filters by radiusNM, but we check distance in KM for your logic
+                        const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         
-        
+                        // Convert Altitude from Feet to Meters
+                        const altMeters = p.alt_baro ? Math.round(p.alt_baro * 0.3048) : "N/A";
+                        const callsign = p.flight?.trim() || "N/A";
+                        const country = p.t || "Unknown"; // 't' is often used for type/desc or reg
 
-                        const dist = getDistance(latitude, longitude, plane[6], plane[5]);
+                        let category = "";
+                        let cardClass = "";
+                        let headerText = "";
 
-                        if (dist > kmr) {
-                            return;
+                        if (dist < 5) {
+                            counts[0]++;
+                            category = "overhead";
+                            cardClass = "overhead-card";
+                            headerText = "✈️ Overhead";
+                        } else if (dist <= 15) {
+                            counts[1]++;
+                            category = "app";
+                            cardClass = "app-card";
+                            headerText = "✈️ Approaching";
+                        } else {
+                            counts[2]++;
+                            category = "surr";
+                            cardClass = "surr-card";
+                            headerText = "✈️ Surrounding";
                         }
 
-                        // if (dist < 2) { // If plane is within 2km
-                        //     new Notification("Plane Overhead!", {
-                        //         body: `Flight ${plane[1]} is only ${dist.toFixed(1)}km away!`,
-                        //         icon: "airplane-icon.png" 
-                        //     });
-                        // }
-
-                        // if (dist < 10) { // If plane is within 15km
-                        //     new Notification("Plane Approaching!", {
-                        //         body: `Flight ${plane[1]} is only ${dist.toFixed(1)}km away!`,
-                        //         icon: "airplane-icon.png" 
-                        //     });
-                        // }
-
-                        if(dist<5){
-                            array[0]++;
-                            // document.getElementById('planeList').innerHTML+=`
-                            // <div class="plane-card" style="border: 2px solid var(--green);">
-                            //     <h4>Overhead</h4>
-                            //     \nICAO24: ${plane[0]} \t Callsign: ${plane[1]?.trim() || "N/A"} \t Country: ${plane[2]} \t Country: ${plane[2]} \t Latitude: ${plane[6]} \t Longitude: ${plane[5]} \t Distance: ${dist}km \t Altitude: ${plane[7]} m\n
-                            // </div>
-                            // `
-
-                            htmlbuffer += `
-                            <div class="plane-card overhead-card">
-                                <div class="plane-header-overhead">
-                                    ✈️ Overhead
+                        htmlbuffer += `
+                            <div class="plane-card ${cardClass}">
+                                <div class="plane-header-${category}">
+                                    ${headerText}
                                 </div>
-
-                                <div class="plane-row"><span>ICAO24:</span> ${plane[0]}</div>
-                                <div class="plane-row"><span>Callsign:</span> ${plane[1]?.trim() || "N/A"}</div>
-                                <div class="plane-row"><span>Country:</span> ${plane[2]}</div>
-                                <div class="plane-row"><span>Latitude:</span> ${plane[6]}</div>
-                                <div class="plane-row"><span>Longitude:</span> ${plane[5]}</div>
+                                <div class="plane-row"><span>ICAO24:</span> ${p.hex.toUpperCase()}</div>
+                                <div class="plane-row"><span>Callsign:</span> ${callsign}</div>
+                                <div class="plane-row"><span>Country:</span> ${country}</div>
+                                <div class="plane-row"><span>Latitude:</span> ${p.lat}</div>
+                                <div class="plane-row"><span>Longitude:</span> ${p.lon}</div>
                                 <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
-                                <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
-                            </div>
-                            `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
-                        }
-                        else if(dist<=15){
-                            array[1]++;
+                                <div class="plane-row"><span>Altitude:</span> ${altMeters} m</div>
+                            </div>`;
 
-                            // document.getElementById('planeList').innerHTML+=`
-                            // <div class="plane-card" style="border: 2px solid var(--yellow);">
-                            //     <h4>Approaching</h4>
-                            //     \nICAO24: ${plane[0]} \t Callsign: ${plane[1]?.trim() || "N/A"} \t Country: ${plane[2]} \t Country: ${plane[2]} \t Latitude: ${plane[6]} \t Longitude: ${plane[5]} \t Distance: ${dist}km \t Altitude: ${plane[7]} m\n
-                            // </div>
-                            // `
-
-                            htmlbuffer += `
-                            <div class="plane-card app-card">
-                                <div class="plane-header-app">
-                                    ✈️ Approaching
-                                </div>
-
-                                <div class="plane-row"><span>ICAO24:</span> ${plane[0]}</div>
-                                <div class="plane-row"><span>Callsign:</span> ${plane[1]?.trim() || "N/A"}</div>
-                                <div class="plane-row"><span>Country:</span> ${plane[2]}</div>
-                                <div class="plane-row"><span>Latitude:</span> ${plane[6]}</div>
-                                <div class="plane-row"><span>Longitude:</span> ${plane[5]}</div>
-                                <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
-                                <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
-                            </div>
-                            `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
-                        }
-                        else{
-                            array[2]++;
-                            // document.getElementById('planeList').innerHTML+=`
-                            // <div class="plane-card" style="border: 2px solid var(--red);">
-                            //     <h4>Surrounding</h4>
-                            //     \nICAO24: ${plane[0]} \t Callsign: ${plane[1]?.trim() || "N/A"} \t Country: ${plane[2]} \t Country: ${plane[2]} \t Latitude: ${plane[6]} \t Longitude: ${plane[5]} \t Distance: ${dist}km \t Altitude: ${plane[7]} m\n
-                            // </div>
-                            // `
-
-                            htmlbuffer += `
-                            <div class="plane-card surr-card">
-                                <div class="plane-header-surr">
-                                    ✈️ Surrounding
-                                </div>
-
-                                <div class="plane-row"><span>ICAO24:</span> ${plane[0]}</div>
-                                <div class="plane-row"><span>Callsign:</span> ${plane[1]?.trim() || "N/A"}</div>
-                                <div class="plane-row"><span>Country:</span> ${plane[2]}</div>
-                                <div class="plane-row"><span>Latitude:</span> ${plane[6]}</div>
-                                <div class="plane-row"><span>Longitude:</span> ${plane[5]}</div>
-                                <div class="plane-row"><span>Distance:</span> ${dist.toFixed(2)} km</div>
-                                <div class="plane-row"><span>Altitude:</span> ${plane[7] || "N/A"} m</div>
-                            </div>
-                            `;
-                            logbuffer+= `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
-                        }
-                        //win.value += `\nPlane #${index + 1}: ICAO24: ${plane[0]} | Callsign: ${plane[1]?.trim() || "N/A"} | Country: ${plane[2]} | Latitude: ${plane[6]} | Longitude: ${plane[5]} | Distance: ${dist}km | Altitude: ${plane[7]} m\n`;
-
-                
+                        logbuffer += `\nPlane #${index + 1}: ICAO24: ${p.hex} | Callsign: ${callsign} | Dist: ${dist.toFixed(1)}km | Alt: ${altMeters}m`;
                     });
-                    // ✅ SINGLE, SYNCED UPDATE
+
                     document.getElementById('planeList').innerHTML = htmlbuffer;
                     win.value += logbuffer;
 
-                    overhead.innerHTML=''
-                    overhead.innerHTML=`Overhead ( <=5 km) <br><br> ${array[0]}`
-                    app.innerHTML=''
-                    app.innerHTML=`Approaching ( <=15 km) <br><br> ${array[1]}`
-                    leaving.innerHTML=''
-                    leaving.innerHTML=`Surrounding ( >15 km and <=${kmr}) <br><br> ${array[2]}`
+                    overhead.innerHTML = `Overhead ( <=5 km) <br><br> ${counts[0]}`;
+                    app_count.innerHTML = `Approaching ( <=15 km) <br><br> ${counts[1]}`;
+                    leaving.innerHTML = `Surrounding ( >15 km) <br><br> ${counts[2]}`;
                 }
-                
+
                 win.scrollTop = win.scrollHeight;
-                
-                await new Promise(resolve => setTimeout(resolve, 10000));
+
+            } catch (err) {
+                win.value += `\nError fetching data: ${err.message}\n`;
+                console.error(err);
             }
-    }
-    })
+
+            // Wait 10 seconds before next poll
+            await new Promise(resolve => setTimeout(resolve, 10000));
+        }
+    });
 
     stop_btn.addEventListener('click', ()=>{
-
-        // overhead.innerHTML='Overhead'
-        
-        // app.innerHTML='Approaching'
-        
-        // leaving.innerHTML='Surrounding'
-        
-        document.getElementById('ld').innerHTML=''
-        document.getElementById('ld').innerHTML='detection stopped...'
-        isTracking=false
-        start_btn.disabled=false;
-        stop_btn.disabled=true;
-        win.value+= "\n\nTracking stopped....\n";
+        document.getElementById('ld').innerHTML = 'detection stopped...';
+        isTracking = false;
+        start_btn.disabled = false;
+        stop_btn.disabled = true;
+        win.value += "\n\nTracking stopped....\n";
         win.scrollTop = win.scrollHeight;
-    })
-
+    });
 </script>
 
 <footer class="footer">
